@@ -49,6 +49,8 @@ void matchDescriptors(std::vector<cv::KeyPoint> &kPtsSource, std::vector<cv::Key
             }
         }
     }
+
+    cout << "Number of matched keypoints = " << matches.size() << "for matcher " << matcherType << " and selector " << selectorType << endl;
 }
 
 // Use one of several types of state-of-art descriptors to uniquely identify keypoints
@@ -95,6 +97,7 @@ void descKeypoints(vector<cv::KeyPoint> &keypoints, cv::Mat &img, cv::Mat &descr
     extractor->compute(img, keypoints, descriptors);
     t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
     cout << descriptorType << " descriptor extraction in " << 1000 * t / 1.0 << " ms" << endl;
+    return t;
 }
 
 // Detect keypoints in image using the traditional Shi-Thomasi detector
@@ -136,6 +139,8 @@ void detKeypointsShiTomasi(vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool b
         imshow(windowName, visImage);
         cv::waitKey(0);
     }
+
+    return t;
 }
 
 void detKeypointsHarris(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool bVis)
@@ -146,6 +151,8 @@ void detKeypointsHarris(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool
     int apertureSize = 3;  // aperture parameter for Sobel operator (must be odd)
     int minResponse = 100; // minimum value for a corner in the 8bit scaled response matrix
     double k = 0.04;       // Harris parameter (see equation for details)
+
+    auto t = (double)cv::getTickCount(); //log time
 
     // Detect Harris corners and normalize output
     cv::Mat dst, dst_norm, dst_norm_scaled;
@@ -192,6 +199,8 @@ void detKeypointsHarris(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool
         } // eof loop over cols
     }     // eof loop over rows
 
+    t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
+    cout << "Harris Corner detection with n = " << keypoints.size() << " keypoints in " << 1000 * t / 1.0 << " ms" << endl;
     // visualize keypoints
     if (bVis)
     {
@@ -203,6 +212,7 @@ void detKeypointsHarris(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool
         cv::waitKey(0);
     }
     
+    return t;
 }
 
 void detKeypointsModern(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, std::string detectorType, bool bVis) //HARRIS, FAST, BRISK, ORB, AKAZE, SIFT
@@ -237,5 +247,9 @@ void detKeypointsModern(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, std:
         std::cerr << "Invalid detector" << std::endl;
     }
 
+    auto t = (double)cv::getTickCount();
     detector->detect(img, keypoints);
+    t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
+    cout << detectorType << " detector with n = " << keypoints.size() << " keypoints in " << 1000 * t / 1.0 << " ms" << endl;
+    return t;
 }
